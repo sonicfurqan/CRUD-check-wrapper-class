@@ -1,6 +1,6 @@
 public class CrudPermision {
   //define org namespace without __
-    Private static final String ORGNAMESPACE = 'PA_files';
+    Private static final String ORGNAMESPACE = '';
     public enum CURDOpration {CREATE,MODIFY,READ,REMOVE}
     /*@Aim:Check object permision along with fls
      *@Param:query that needs to be cheked

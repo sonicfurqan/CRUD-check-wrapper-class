@@ -1,14 +1,20 @@
 public class CrudPermision {
-    
+    //define org namespace without __ at end
+    Private static final String ORGNAMESPACE = '';
     public enum CURDOpration {CREATE,MODIFY,READ,REMOVE}
     /*@Aim:Check object permision along with fls
      *@Param:query that needs to be cheked
 	 *@Return:Boolean value for permisson
 	 */
     public static Boolean checkCurd(String queryOrObjectName,CURDOpration opration){
+        System.debug('checkCurd of util method');
+        queryOrObjectName=queryOrObjectName.replaceAll('select','SELECT').replaceAll('from','FROM').replaceAll('where','WHERE');
+        queryOrObjectName=queryOrObjectName.replaceAll('Select','SELECT').replaceAll('From','FROM').replaceAll('Where','WHERE');
         Map<String,List<String>> allFields=formateQuery(queryOrObjectName);
+         System.debug('checkCurd of util method'+allFields);
         Boolean isAccess=true;
         for(String objectName:allFields.keySet()){
+            System.debug('objectName>'+objectName);
             Schema.DescribeSObjectResult objSchema=getSchema(objectName);
             if(objSchema!=null){
                 if(opration==CURDOpration.CREATE){
@@ -20,13 +26,31 @@ public class CrudPermision {
                     if(objSchema.isUpdateable()){
                         List<String> fields=allFields.get(objectName);
                         for(String fName:fields){
-                            if(!( objSchema.fields.getMap().containsKey(fName) 
-                                 && 
-                                 (objSchema.fields.getMap().get(fName)).getDescribe().isUpdateable()
-                                )){
-                                    isAccess=false;
-                                    break;
+                            if(String.isEmpty(ORGNAMESPACE)){
+                                if(!(objSchema.fields.getMap().containsKey(fName) 
+                                     && 
+                                     (objSchema.fields.getMap().get(fName)).getDescribe().isUpdateable()
+                                    )){
+                                        isAccess=false;
+                                        break;
+                                    }    
                             }
+                            else{
+                                if(!(objSchema.fields.getMap().containsKey(fName)
+                                   &&
+                                  (objSchema.fields.getMap().get(fName)).getDescribe().isUpdateable())){
+                                        isAccess=false;
+                                        break;
+                                }
+                                else if(!(objSchema.fields.getMap().containsKey(ORGNAMESPACE+'__'+fName)
+                                        &&
+                                    (objSchema.fields.getMap().get(ORGNAMESPACE+'__'+fName)).getDescribe().isUpdateable())){
+                                        isAccess=false;
+                                        break;
+                                } 
+                                
+                            }
+                            
                         }
                     }
                     else{
@@ -37,14 +61,33 @@ public class CrudPermision {
                 else if(opration==CURDOpration.READ){
                     if(objSchema.isAccessible()){
                         List<String> fields=allFields.get(objectName);
+                       
                         for(String fName:fields){
-                            if(!( objSchema.fields.getMap().containsKey(fName) 
-                                 && 
-                                 (objSchema.fields.getMap().get(fName)).getDescribe().isAccessible()
-                                )){
-                                    isAccess=false;
-                                    break;
+                            if(String.isEmpty(ORGNAMESPACE)){
+                                if(!( objSchema.fields.getMap().containsKey(fName) 
+                                     && 
+                                     (objSchema.fields.getMap().get(fName)).getDescribe().isAccessible()
+                                    )){
+                                        isAccess=false;
+                                        break;
+                                    }    
+                            }
+                            else{
+                                if(!(objSchema.fields.getMap().containsKey(fName)
+                                   &&
+                                  (objSchema.fields.getMap().get(fName)).getDescribe().isAccessible())){
+                                        isAccess=false;
+                                        break;
                                 }
+                                else if(!(objSchema.fields.getMap().containsKey(ORGNAMESPACE+'__'+fName)
+                                        &&
+                                    (objSchema.fields.getMap().get(ORGNAMESPACE+'__'+fName)).getDescribe().isAccessible())){
+                                        isAccess=false;
+                                        break;
+                                } 
+                                
+                            }
+                            
                         }
                     }
                     else{

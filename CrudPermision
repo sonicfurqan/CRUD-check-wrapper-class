@@ -89,6 +89,7 @@ public class CrudPermision {
     }
    	//returns fieldnames and its object
     private static Map<String,List<String>> formateQuery(String query){
+	query = removeAggrigateFunction(query);
         Map<String,List<String>> validate=new  Map<String,List<String>>();
         if(query.contains('FROM')){
         Integer numberOfQuerys=query.countMatches('FROM');
@@ -197,6 +198,64 @@ public class CrudPermision {
          
        
         return temp;
+    }
+    
+     private static String getAggrigateFunction(String query,String functionName){
+        Integer index=query.indexOfIgnoreCase(functionName+'(');
+        Integer aFunctionIndex=query.indexOf(functionName+'(');
+        
+        
+        String firstQuery=query.substring(0,aFunctionIndex);
+        
+        String temp=query.substring(aFunctionIndex);
+        Integer firstBrac=temp.indexOf(')');
+        
+        String aggrigatFunction=temp.substring(0,firstBrac);
+        aggrigatFunction=aggrigatFunction.substring(aggrigatFunction.indexOf('(')+1);
+        System.debug('aggrigatFunction '+aggrigatFunction);
+        
+        String lastQuery=temp.substring(temp.indexOf(')')+1);
+        String q=firstQuery+aggrigatFunction+lastQuery;
+        
+        if(q.contains(functionName+'(')){
+            return getAggrigateFunction(q,functionName);
+        }
+        System.debug('q=='+q);
+        
+        return q;
+    }
+    
+    //remove aggrigate function from query
+    private static String removeAggrigateFunction(String query){
+        //if any aggrigate function needs to be added add new if condiition with function name
+	
+	
+	//lines commented if query is not formated then uncomment
+        /*query=query.replaceAll('( ', '(');
+        query=query.replaceAll(' )', ')');*/
+	
+	
+	
+        if(query.contains('format')){
+        	query=getAggrigateFunction(query,'format');    
+        }
+        if(query.contains('count')){
+        	query=getAggrigateFunction(query,'count');    
+        }
+        if(query.contains('sum')){
+        	query=getAggrigateFunction(query,'sum');    
+        }
+        if(query.contains('avg')){
+        	query=getAggrigateFunction(query,'avg');    
+        }
+        if(query.contains('max')){
+        	query=getAggrigateFunction(query,'max');    
+        }
+        
+        
+        
+        
+		return query;
     }
 
     
